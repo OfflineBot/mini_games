@@ -5,6 +5,7 @@ const port = 8000;
 
 const home_router = require("./routes/home.js")
 
+app.set('view engine', 'ejs')
 app.use("/", home_router)
 
 
