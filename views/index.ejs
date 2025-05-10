@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Typing Game</title>
+</head>
+<body>
+    <div id="loginPage">
+        <h1>Login</h1>
+        <form onsubmit="register(event)">
+            <input id="usernameInput" placeholder="Username" required />
+            <button type="submit">Join</button>
+        </form>
+    </div>
+
+    <div id="lobbyPage" style="display:none;">
+        <h1>Lobby</h1>
+        <h3>Players:</h3>
+        <ul id="playerList"></ul>
+        <label>Time per round (seconds):</label>
+        <input id="timeInput" type="number" min="1" value="10" onchange="updateTime()" />
+        <br>
+        <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <div id="gamePage" style="display:none;">
+        <h1>Typing Round <span id="roundInfo"></span></h1>
+        <p id="prevSentence"></p>
+        <input id="sentenceInput" placeholder="Your sentence..." />
+        <button onclick="submitSentence()">Submit</button>
+        <p id="waitingMessage" style="display:none;">Waiting for other players...</p>
+    </div>
+
+    <div id="resultPage" style="display:none;">
+        <h1>Final Story</h1>
+        <ul id="resultList"></ul>
+        <button onclick="location.reload()">Play Again</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        function register(event) {
+            event.preventDefault();
+            const username = document.getElementById('usernameInput').value;
+            socket.emit('register', username);
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('lobbyPage').style.display = 'block';
+        }
+
+        function updateTime() {
+            const time = document.getElementById('timeInput').value;
+            socket.emit('setTime', time);
+        }
+
+        function startGame() {
+            socket.emit('startGame');
+        }
+
+        function submitSentence() {
+            const sentence = document.getElementById('sentenceInput').value;
+            socket.emit('submitSentence', sentence);
+            document.getElementById('sentenceInput').value = "";
+            document.getElementById('waitingMessage').style.display = 'block'; // Zeigt an, dass du wartest
+        }
+
+        socket.on('playersUpdate', (players) => {
+            const list = document.getElementById('playerList');
+            list.innerHTML = "";
+            players.forEach(p => {
+                const li = document.createElement('li');
+                li.textContent = p;
+                list.appendChild(li);
+            });
+        });
+
+        socket.on('timeUpdate', (time) => {
+            document.getElementById('timeInput').value = time;
+        });
+
+        socket.on('startGame', () => {
+            document.getElementById('lobbyPage').style.display = 'none';
+            document.getElementById('gamePage').style.display = 'block';
+        });
+
+        socket.on('newRound', (data) => {
+            document.getElementById('roundInfo').textContent = `${data.round}/${data.totalRounds}`;
+            document.getElementById('prevSentence').textContent = data.previousSentence || "Start a new story!";
+            document.getElementById('waitingMessage').style.display = 'none'; // Verstecke "Warten"-Nachricht, wenn die Runde startet
+        });
+
+        socket.on('showResults', (players) => {
+            document.getElementById('gamePage').style.display = 'none';
+            document.getElementById('resultPage').style.display = 'block';
+            const list = document.getElementById('resultList');
+            list.innerHTML = "";
+            players.forEach(p => {
+                const li = document.createElement('li');
+                li.textContent = `${p.username}: ${p.story.join(" ")}`; // Zeige die gesamte Story an
+                list.appendChild(li);
+            });
+        });
+    </script>
+</body>
+</html>
