@@ -2,31 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Lobby</title>
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <h1>Users:</h1>
-    <ul>
-        <% users.forEach(function(user) { %>
-            <li><%= user %></li>
-        <% }) %>
-    </ul>
+    <h1>Welcome, <%= username %>!</h1>
+
+    <h2>Online Users:</h2>
+    <ul id="userList"></ul>
 
     <script>
-        fetch('/ping', { method: 'POST' })
-            .then(response => {
-                if (!response.ok) {
-                    console.log('Ping request failed');
-                }
-            })
-            .catch(error => {
-                console.log('Error with ping request:', error);
-            });
+        const socket = io();
 
-        setInterval(() => {
-            fetch('/ping', {method: 'POST'});
-        }, 5000);
+        socket.emit('register', "<%= username %>");
+
+        socket.on('updateUsers', (users) => {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.textContent = user;
+                userList.appendChild(li);
+            });
+        });
     </script>
 </body>
 </html>

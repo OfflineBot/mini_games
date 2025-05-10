@@ -1,47 +1,75 @@
-
 const express = require('express');
-const cookie_parser = require('cookie-parser');
+const http = require('http');
+const socketIo = require('socket.io');
+const session = require('express-session');
+const path = require('path');
 
-const app = express();
 const port = process.env.PORT || 8000;
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
+const onlineUsers = {}; // username -> socket.id
 
-const home_router = require("./routes/home.js")
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(session({
+    secret: 'secret_key',
+    resave: false,
+    saveUninitialized: true
+}));
 
-const users = [];
-const active_users = {};
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
-app.use(cookie_parser());
-app.set('view engine', 'ejs')
+// Routes
 
-app.use((req, res, next) => {
-  req.users = users;
-  req.active_users = active_users;
-  next();
+// Show login page
+app.get('/', (req, res) => {
+    res.render('login');
 });
 
-app.use("/", home_router)
+// Handle login
+app.post('/login', (req, res) => {
+    const username = req.body.username.trim();
+    if (!username) return res.redirect('/');
 
-setInterval(() => {
-    const now = Date.now();
-    for (const ip in active_users) {
-        let last_ping = now - active_users[ip].last_ping;
-        console.log("last ping", last_ping);
-        if (last_ping > 10000) {
-            let username = active_users[ip].name
-            delete active_users[ip];
-            const index = users.indexOf(username);
-            if (index !== -1) {
-                users.splice(index, 1); 
-            }
-            console.log(users)
-            console.log("player has been deleted")
-        }
+    req.session.username = username;
+    res.redirect('/lobby');
+});
+
+// Show lobby (only if logged in)
+app.get('/lobby', (req, res) => {
+    if (!req.session.username) {
+        return res.redirect('/');
     }
-}, 5000)
+    res.render('lobby', { username: req.session.username });
+});
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server is running...`);
+// Socket.io events
+io.on('connection', (socket) => {
+    console.log('Socket connected: ' + socket.id);
+
+    // User registers after connection
+    socket.on('register', (username) => {
+        console.log(`User registered: ${username}`);
+        onlineUsers[username] = socket.id;
+        io.emit('updateUsers', Object.keys(onlineUsers));
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Socket disconnected: ' + socket.id);
+        for (const username in onlineUsers) {
+            if (onlineUsers[username] === socket.id) {
+                delete onlineUsers[username];
+                break;
+            }
+        }
+        io.emit('updateUsers', Object.keys(onlineUsers));
+    });
+});
+
+// Start server
+server.listen(port, () => {
+    console.log('Server running..');
 });
