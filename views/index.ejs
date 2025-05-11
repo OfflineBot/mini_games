@@ -3,36 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Typing Game</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div id="loginPage">
-        <h1>Login</h1>
+    <div class="centering" id="loginPage">
+        <h1>Name:</h1>
         <form onsubmit="register(event)">
             <input id="usernameInput" placeholder="Username" required />
             <button type="submit">Join</button>
         </form>
     </div>
 
-    <div id="lobbyPage" style="display:none;">
+    <div class="centering" id="lobbyPage" style="display:none;">
         <h1>Lobby</h1>
         <h3>Players:</h3>
         <ul id="playerList"></ul>
         <label>Time per round (seconds):</label>
-        <input id="timeInput" type="number" min="1" value="10" onchange="updateTime()" />
+        <input id="timeInput" type="number" min="1" value="30" onchange="updateTime()" />
         <br>
         <button onclick="startGame()">Start Game</button>
     </div>
 
-    <div id="gamePage" style="display:none;">
+    <div class="centering" id="gamePage" style="display:none;">
         <h1>Typing Round <span id="roundInfo"></span></h1>
         <p id="prevSentence"></p>
-        <input id="sentenceInput" placeholder="Your sentence..." />
-        <button onclick="submitSentence()">Submit</button>
+        <textarea name="sentenceInput" id="sentenceInput" style="display:block;"></textarea>
+        <button id="sentenceButton" onclick="submitSentence()" style="display:block;">Submit</button>
         <p id="waitingMessage" style="display:none;">Waiting for other players...</p>
         <div id="timer"></div>
     </div>
 
-    <div id="resultPage" style="display:none;">
+    <div class="centering" id="resultPage" style="display:none;">
         <h1>Final Story</h1>
         <ul id="resultList"></ul>
         <button onclick="location.reload()">Play Again</button>
@@ -47,7 +48,7 @@
             const username = document.getElementById('usernameInput').value;
             socket.emit('register', username);
             document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('lobbyPage').style.display = 'block';
+            document.getElementById('lobbyPage').style.display = 'flex';
         }
 
         function updateTime() {
@@ -63,7 +64,10 @@
             const sentence = document.getElementById('sentenceInput').value;
             socket.emit('submitSentence', sentence);
             document.getElementById('sentenceInput').value = "";
+            document.getElementById('')
             document.getElementById('waitingMessage').style.display = 'block'; // Zeigt an, dass du wartest
+            document.getElementById('sentenceButton').style.display = 'none';
+            document.getElementById('sentenceInput').style.display = 'none';
         }
 
         socket.on('playersUpdate', (players) => {
@@ -82,13 +86,15 @@
 
         socket.on('startGame', () => {
             document.getElementById('lobbyPage').style.display = 'none';
-            document.getElementById('gamePage').style.display = 'block';
+            document.getElementById('gamePage').style.display = 'flex';
         });
 
         socket.on('newRound', (data) => {
             document.getElementById('roundInfo').textContent = `${data.round}/${data.totalRounds}`;
             document.getElementById('prevSentence').textContent = data.previousSentence || "Start a new story!";
             document.getElementById('waitingMessage').style.display = 'none'; // Verstecke "Warten"-Nachricht, wenn die Runde startet
+            document.getElementById('sentenceButton').style.display = 'block';
+            document.getElementById('sentenceInput').style.display = 'block';
         });
 
         socket.on("timerUpdate", (time) => {
@@ -100,7 +106,7 @@
 
         socket.on('showResults', (players) => {
             document.getElementById('gamePage').style.display = 'none';
-            document.getElementById('resultPage').style.display = 'block';
+            document.getElementById('resultPage').style.display = 'flex';
             const list = document.getElementById('resultList');
             list.innerHTML = "";
 

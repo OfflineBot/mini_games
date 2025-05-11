@@ -8,6 +8,7 @@ const port = process.env.PORT || 8000;
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'))
 app.set('view engine', 'ejs');
 
 let players = {}; // socket.id -> { username, sentence, story }
