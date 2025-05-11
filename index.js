@@ -74,6 +74,10 @@ io.on('connection', socket => {
         io.emit('playersUpdate', Object.values(players).map(p => p.username));
     });
 
+    socket.on('requestNext', () => {
+        io.emit('doNext');
+    })
+
     function startRoundTimer() {
         let remainingTime = roundTime; // Setze die verbleibende Zeit
 

@@ -27,6 +27,7 @@
     <div class="centering" id="gamePage" style="display:none;">
         <h1>Typing Round <span id="roundInfo"></span></h1>
         <p id="prevSentence"></p>
+        <p id="nextSentence" style="display:hidden;"></p>
         <textarea name="sentenceInput" id="sentenceInput" style="display:block;" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
         <button id="sentenceButton" onclick="submitSentence()" style="display:block;">Submit</button>
         <p id="waitingMessage" style="display:none;">Waiting for other players...</p>
@@ -35,8 +36,9 @@
 
     <div class="centering" id="resultPage" style="display:none;">
         <h1>Final Story</h1>
-        <ul id="resultList"></ul>
+        <div id="resultContainer"></div>
         <button onclick="location.reload()">Play Again</button>
+        <button onclick="requestNext()">Next</button>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -67,6 +69,8 @@
             }
             socket.emit('submitSentence', sentence);
             document.getElementById('sentenceInput').value = "";
+            document.getElementById('nextSentence').innerText = sentence;
+            document.getElementById('nextSentence').style.display = "block";
             document.getElementById('waitingMessage').style.display = 'block'; // Zeigt an, dass du wartest
             document.getElementById('sentenceButton').style.display = 'none';
             document.getElementById('sentenceInput').style.display = 'none';
@@ -95,6 +99,7 @@
             document.getElementById('roundInfo').textContent = `${data.round}/${data.totalRounds}`;
             document.getElementById('prevSentence').textContent = data.previousSentence || "Start a new story!";
             document.getElementById('waitingMessage').style.display = 'none'; // Verstecke "Warten"-Nachricht, wenn die Runde startet
+            document.getElementById('nextSentence').style.display = "none";
             document.getElementById('sentenceButton').style.display = 'block';
             document.getElementById('sentenceInput').style.display = 'block';
         });
@@ -103,36 +108,75 @@
             const timerElement = document.getElementById("timer");
             const seconds = Math.floor(time / 1000);
             const seconds_left = seconds % 60;
-            console.log(seconds_left)
             if (seconds_left < 2) {
                 submitSentence();
             }
             timerElement.textContent = `Time left: ${seconds_left-1}`;
         });
 
+        let stories = []
+        let currentStoryIndex = 0;
+        let currentEntryIndex = 0;
+
         socket.on('showResults', (players) => {
             document.getElementById('gamePage').style.display = 'none';
             document.getElementById('resultPage').style.display = 'flex';
-            const list = document.getElementById('resultList');
-            list.innerHTML = "";
+            
+            stories = []; // Reset
+            currentStoryIndex = 0;
+            currentEntryIndex = 0;
 
-            Object.values(players).forEach(storyList => {
-                const container = document.createElement('div');
-                container.classList.add('story-container');
-                container.style.border = "1px solid black";
-                container.style.margin = "10px";
-                container.style.padding = "10px";
-                
+            // Container leeren
+            const container = document.getElementById('resultContainer');
+            container.innerHTML = "";
 
-                storyList.forEach(entry => {
-                    const p = document.createElement('p');
-                    p.textContent = `${entry.name}: ${entry.story}`;
-                    container.appendChild(p);
-                });
+        // Spieler-Storys vorbereiten
+        Object.values(players).forEach(storyList => {
+            const storyBlock = {
+                entries: storyList, // Liste von {name, story}
+                element: document.createElement('div') // HTML-Container
+            };
 
-                list.appendChild(container);
-            });
+            storyBlock.element.style.border = "1px solid gray";
+            storyBlock.element.style.margin = "10px";
+            storyBlock.element.style.padding = "10px";
+            storyBlock.element.style.width = "80%"; // optional etwas kleiner
+            storyBlock.element.style.backgroundColor = "#222"; // leicht andere Farbe
+
+            container.appendChild(storyBlock.element);
+            stories.push(storyBlock);
         });
+    });
+
+    function next() {
+        if (currentStoryIndex >= stories.length) {
+            return; // Alle Storys sind durch
+        }
+
+        const currentStory = stories[currentStoryIndex];
+
+        if (currentEntryIndex < currentStory.entries.length) {
+            const entry = currentStory.entries[currentEntryIndex];
+            const p = document.createElement('p');
+            p.textContent = `${entry.name}: ${entry.story}`;
+            currentStory.element.appendChild(p);
+            currentEntryIndex++;
+        } else {
+            // Wenn die aktuelle Story fertig ist, zur nächsten springen
+            currentStoryIndex++;
+            currentEntryIndex = 0;
+            next(); // Automatisch weitermachen
+        }
+    }
+
+    function requestNext() {
+        socket.emit('requestNext');
+    }
+
+    socket.on('doNext', () => {
+        next();
+    })
+ 
 
     </script>
 </body>
