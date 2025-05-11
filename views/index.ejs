@@ -27,7 +27,7 @@
                 <div class="lobby-item" id="settings-display">
                     <h3>Settings:</h3>
                     <label>Time (seconds):</label>
-                    <input id="timeInput" type="number" min="1" value="30" onchange="updateTime()" />
+                    <input id="timeInput" type="number" min="1" value="30" max="180" onchange="updateTime()" />
                 </div>
             </div>
             <button id="lobbyButton" onclick="startGame()">Start Game</button>
