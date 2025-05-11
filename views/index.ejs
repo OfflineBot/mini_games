@@ -27,7 +27,7 @@
     <div class="centering" id="gamePage" style="display:none;">
         <h1>Typing Round <span id="roundInfo"></span></h1>
         <p id="prevSentence"></p>
-        <textarea name="sentenceInput" id="sentenceInput" style="display:block;"></textarea>
+        <textarea name="sentenceInput" id="sentenceInput" style="display:block;" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
         <button id="sentenceButton" onclick="submitSentence()" style="display:block;">Submit</button>
         <p id="waitingMessage" style="display:none;">Waiting for other players...</p>
         <div id="timer"></div>
@@ -64,7 +64,6 @@
             const sentence = document.getElementById('sentenceInput').value;
             socket.emit('submitSentence', sentence);
             document.getElementById('sentenceInput').value = "";
-            document.getElementById('')
             document.getElementById('waitingMessage').style.display = 'block'; // Zeigt an, dass du wartest
             document.getElementById('sentenceButton').style.display = 'none';
             document.getElementById('sentenceInput').style.display = 'none';
@@ -101,7 +100,11 @@
             const timerElement = document.getElementById("timer");
             const seconds = Math.floor(time / 1000);
             const seconds_left = seconds % 60;
-            timerElement.textContent = `Time left: ${seconds_left}`;
+            console.log(seconds_left)
+            if (seconds_left < 2) {
+                submitSentence();
+            }
+            timerElement.textContent = `Time left: ${seconds_left-1}`;
         });
 
         socket.on('showResults', (players) => {
@@ -112,9 +115,11 @@
 
             Object.values(players).forEach(storyList => {
                 const container = document.createElement('div');
+                container.classList.add('story-container');
                 container.style.border = "1px solid black";
                 container.style.margin = "10px";
                 container.style.padding = "10px";
+                
 
                 storyList.forEach(entry => {
                     const p = document.createElement('p');
