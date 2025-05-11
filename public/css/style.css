@@ -4,6 +4,12 @@
     font-family: "Roboto", sans-serif;
 }
 
+textarea {
+    width: 40%;
+    height: 30%;
+    resize: none;
+}
+
 body, html {
     background-color: #111214;
     margin: 0;

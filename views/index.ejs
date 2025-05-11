@@ -61,7 +61,10 @@
         }
 
         function submitSentence() {
-            const sentence = document.getElementById('sentenceInput').value;
+            let sentence = document.getElementById('sentenceInput').value;
+            if (sentence.trim() === "") {
+                sentence = "<empty>";
+            }
             socket.emit('submitSentence', sentence);
             document.getElementById('sentenceInput').value = "";
             document.getElementById('waitingMessage').style.display = 'block'; // Zeigt an, dass du wartest
