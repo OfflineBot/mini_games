@@ -29,6 +29,7 @@
         <input id="sentenceInput" placeholder="Your sentence..." />
         <button onclick="submitSentence()">Submit</button>
         <p id="waitingMessage" style="display:none;">Waiting for other players...</p>
+        <div id="timer"></div>
     </div>
 
     <div id="resultPage" style="display:none;">
@@ -90,17 +91,35 @@
             document.getElementById('waitingMessage').style.display = 'none'; // Verstecke "Warten"-Nachricht, wenn die Runde startet
         });
 
+        socket.on("timerUpdate", (time) => {
+            const timerElement = document.getElementById("timer");
+            const seconds = Math.floor(time / 1000);
+            const seconds_left = seconds % 60;
+            timerElement.textContent = `Time left: ${seconds_left}`;
+        });
+
         socket.on('showResults', (players) => {
             document.getElementById('gamePage').style.display = 'none';
             document.getElementById('resultPage').style.display = 'block';
             const list = document.getElementById('resultList');
             list.innerHTML = "";
-            players.forEach(p => {
-                const li = document.createElement('li');
-                li.textContent = `${p.username}: ${p.story.join(" ")}`; // Zeige die gesamte Story an
-                list.appendChild(li);
+
+            Object.values(players).forEach(storyList => {
+                const container = document.createElement('div');
+                container.style.border = "1px solid black";
+                container.style.margin = "10px";
+                container.style.padding = "10px";
+
+                storyList.forEach(entry => {
+                    const p = document.createElement('p');
+                    p.textContent = `${entry.name}: ${entry.story}`;
+                    container.appendChild(p);
+                });
+
+                list.appendChild(container);
             });
         });
+
     </script>
 </body>
 </html>
