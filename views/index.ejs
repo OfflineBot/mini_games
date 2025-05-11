@@ -6,39 +6,59 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div class="centering" id="loginPage">
-        <h1>Name:</h1>
-        <form onsubmit="register(event)">
-            <input id="usernameInput" placeholder="Username" required />
-            <button type="submit">Join</button>
-        </form>
+    <div class="mainPage" id="loginPage">
+        <div class="centering">
+            <h1>Name:</h1>
+            <form id="login-form" onsubmit="register(event)">
+                <input id="usernameInput" placeholder="Username" required autocomplete="off" />
+                <button id="usernameButton" type="submit">Join</button>
+            </form>
+        </div>
     </div>
 
-    <div class="centering" id="lobbyPage" style="display:none;">
-        <h1>Lobby</h1>
-        <h3>Players:</h3>
-        <ul id="playerList"></ul>
-        <label>Time per round (seconds):</label>
-        <input id="timeInput" type="number" min="1" value="30" onchange="updateTime()" />
-        <br>
-        <button onclick="startGame()">Start Game</button>
+    <div class="mainPage" id="lobbyPage" style="display:none;">
+        <div class="centering">
+            <h1>Lobby</h1>
+            <div id="lobby-display">
+                <div class="lobby-item" id="player-display">
+                    <h3>Players:</h3>
+                    <ul id="playerList"></ul>
+                </div>
+                <div class="lobby-item" id="settings-display">
+                    <h3>Settings:</h3>
+                    <label>Time (seconds):</label>
+                    <input id="timeInput" type="number" min="1" value="30" onchange="updateTime()" />
+                </div>
+            </div>
+            <button id="lobbyButton" onclick="startGame()">Start Game</button>
+        </div>
     </div>
 
-    <div class="centering" id="gamePage" style="display:none;">
-        <h1>Typing Round <span id="roundInfo"></span></h1>
-        <p id="prevSentence"></p>
-        <p id="nextSentence" style="display:hidden;"></p>
-        <textarea name="sentenceInput" id="sentenceInput" style="display:block;" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
-        <button id="sentenceButton" onclick="submitSentence()" style="display:block;">Submit</button>
-        <p id="waitingMessage" style="display:none;">Waiting for other players...</p>
-        <div id="timer"></div>
+    <div class="mainPage" id="gamePage" style="display:none;">
+        <div class="centering">
+            <div id="gameHeader">
+                <h1>Typing Round <span id="roundInfo"></span><span id="timer"></span></h1>
+            </div>
+            <p id="prevSentence"></p>
+            <p id="nextSentence" style="display:hidden;"></p>
+            <textarea name="sentenceInput" id="sentenceInput" style="display:block;" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
+            <button id="sentenceButton" onclick="submitSentence()" style="display:block;">Submit</button>
+            <p id="waitingMessage" style="display:none;">Waiting for other players...</p>
+        </div>
     </div>
 
-    <div class="centering" id="resultPage" style="display:none;">
-        <h1>Final Story</h1>
-        <div id="resultContainer"></div>
-        <button onclick="location.reload()">Play Again</button>
-        <button onclick="requestNext()">Next</button>
+    <div class="mainPage" id="resultPage" style="display:none;">
+        <div id="outerCenter">
+            <div class="centering">
+                <h1>Final Story</h1>
+                <div id="resultContainer"></div>
+            </div>
+
+            <div id="resultButtons">
+                <button id="playAgain" onclick="location.reload()">Play Again</button>
+                <button id="nextButton" onclick="requestNext()">Next</button>
+            </div>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -50,7 +70,7 @@
             const username = document.getElementById('usernameInput').value;
             socket.emit('register', username);
             document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('lobbyPage').style.display = 'flex';
+            document.getElementById('lobbyPage').style.display = 'block';
         }
 
         function updateTime() {
@@ -92,7 +112,7 @@
 
         socket.on('startGame', () => {
             document.getElementById('lobbyPage').style.display = 'none';
-            document.getElementById('gamePage').style.display = 'flex';
+            document.getElementById('gamePage').style.display = 'block';
         });
 
         socket.on('newRound', (data) => {
@@ -102,16 +122,20 @@
             document.getElementById('nextSentence').style.display = "none";
             document.getElementById('sentenceButton').style.display = 'block';
             document.getElementById('sentenceInput').style.display = 'block';
+            document.getElementById('timer').style.color = "white";
         });
 
         socket.on("timerUpdate", (time) => {
             const timerElement = document.getElementById("timer");
             const seconds = Math.floor(time / 1000);
             const seconds_left = seconds % 60;
+            if (seconds_left < 12) {
+                document.getElementById('timer').style.color = "red";
+            }
             if (seconds_left < 2) {
                 submitSentence();
             }
-            timerElement.textContent = `Time left: ${seconds_left-1}`;
+            timerElement.textContent = `${seconds_left-1}`;
         });
 
         let stories = []
@@ -120,7 +144,7 @@
 
         socket.on('showResults', (players) => {
             document.getElementById('gamePage').style.display = 'none';
-            document.getElementById('resultPage').style.display = 'flex';
+            document.getElementById('resultPage').style.display = 'block';
             
             stories = []; // Reset
             currentStoryIndex = 0;
@@ -140,7 +164,7 @@
             storyBlock.element.style.border = "1px solid gray";
             storyBlock.element.style.margin = "10px";
             storyBlock.element.style.padding = "10px";
-            storyBlock.element.style.width = "80%"; // optional etwas kleiner
+            //storyBlock.element.style.width = "80%"; // optional etwas kleiner
             storyBlock.element.style.backgroundColor = "#222"; // leicht andere Farbe
 
             container.appendChild(storyBlock.element);

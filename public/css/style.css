@@ -1,14 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
+/* HTML */
 * {
     font-family: "Roboto", sans-serif;
 }
 
-textarea {
-    width: 40%;
-    height: 30%;
-    resize: none;
-}
 
 body, html {
     background-color: #111214;
@@ -16,7 +12,19 @@ body, html {
     padding: 0;
     height: 100%;
     width: 100%;
-    /*overflow: hidden;*/
+}
+
+button, input, textarea {
+    background-color: #333;
+    color: white;
+}
+
+
+/* GENERAL PAGES */
+.mainPage {
+    height: 100%;
+    width: 100%;
+    background-color: #111214;
 }
 
 .centering {
@@ -24,23 +32,138 @@ body, html {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
+    height: 50%;
+    width: 100%;
     margin: auto;
     color: #ccc;
     background-color: #111214;
 }
 
-#resultList {
+
+/* LOGIN */
+#login-form {
+    display: flex;
+}
+
+#usernameInput {
+    font-size: 20px;
+    outline: none;
+    border: 1px solid #777;
+    border-radius: 5px 0 0 5px;
+    border-right: none;
+    margin-right: 0;
+    background-color: #333333;
+    color: white;
+}
+
+#usernameButton {
+    margin-left: 0;
+    font-size: 20px;
+    border: 1px solid #777;
+    outline: none;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+    background-color: #333333;
+    color: white;
+}
+
+
+/* LOBBY */
+#lobby-display {
+    display: flex;
+    width: 50%;
+    max-width: 70%;
+}
+
+.lobby-item {
+    padding: 25px;
+}
+
+#player-display {
+    border: 1px solid #777;
+    border-radius: 5px 0 0 5px;
+    width: 50%;
+}
+
+#settings-display {
+    border: 1px solid #777;
+    border-radius: 0 5px 5px 0;
+    width: 50%;
+}
+
+#timeInput {
+    width: 50px;
+}
+
+#lobbyButton {
+    margin-top: 20px;
+    font-size: 20px;
+}
+
+
+/* GAME */
+textarea {
+    width: 40%;
+    height: 30%;
+    resize: none;
+    outline: none;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+#gameHeader {
+    display: flex;
+}
+
+#timer {
+    margin-left: 20px;
+}
+
+#sentenceButton {
+    margin-top: 20px;
+    font-size: 20px;
+}
+
+
+/* RESULTS */
+#resultContainer {
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Abstand zwischen den Blöcken */
-    max-height: 80vh; /* Maximale Höhe für die gesamte Liste */
-    overflow-y: auto; /* Ermöglicht das Scrollen durch alle Blöcke */
+    gap: 10px; 
+    max-height: 80vh; 
+    overflow-y: auto; 
+    /*align-items: center;
+    justify-content: center;*/
+    padding: 20px;
 }
 
 .story-container {
     border: 1px solid #777;
     margin: 10px;
     padding: 10px;
-    /* Entferne max-height und overflow-y aus den einzelnen Blöcken */
+}
+
+#outerCenter {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#resultButtons {
+    margin-top: auto;
+    text-align: center;
+    margin: 80px;
+}
+
+#nextButton {
+    font-size: 20px;
+    margin: 20px;
+    background-color: rgb(41, 31, 68);
+}
+
+#playAgain {
+    font-size: 20px;
+    margin: 20px;
 }
